@@ -1,6 +1,6 @@
 import { removeSmall } from "../utils/index"
 
-module.exports = class Modelbox {
+class Modelbox {
     constructor(obj) {
         this.obj = { ...obj }
     }
@@ -74,3 +74,5 @@ module.exports = class Modelbox {
         return typeof v === "object" && v === null
     }
 }
+
+export default Modelbox

@@ -1,5 +1,5 @@
 {
-  "name": "model-box",
+  "name": "@souche-f2e/model-box",
   "version": "1.0.0",
   "description": "a middel model box",
   "main": "./src/index.js",
@@ -10,6 +10,14 @@
     "model",
     "box"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git@git.souche-inc.com:yuanjiankang/model-box.git"
+  },
   "author": "yuanjiankang <yuanjiankang@souche.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.4.0"
+  }
 }
