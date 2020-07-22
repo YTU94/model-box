@@ -1,4 +1,24 @@
-import { removeSmall } from "../utils/index"
+import { isDef, removeSmall } from "../utils/index"
+
+//TODO: 是否要支持 要支持深拷贝
+
+function dealWithString(key, targetKey, obj = {}) {
+    try {
+        if (targetKey.match(/^`.*`/)) {
+            if (/\{([^\}]+)\}/.test(targetKey)) {
+                const v = obj[RegExp.$1]
+                obj[key] = v ? targetKey.replace(/\$.*\}/, v) : ""
+            }
+            obj[key] = removeSmall(obj[key])
+        } else {
+            obj[targetKey] = this.obj[key]
+            key !== targetKey && delete this.obj[key]
+        }
+    } catch (error) {
+        // eslint-disable-next-line
+        console.log(error)
+    }
+}
 
 class Modelbox {
     constructor(obj) {
@@ -10,40 +30,38 @@ class Modelbox {
      * key: 原始对象的属性
      * targetKey: 映射新对象的新属性, 如果是对象
      */
-    generate(keyMap) {
+    generate(keyMap, sourceObj) {
+        let obj = { ...sourceObj || this.obj}
         // eslint-disable-next-line
         for (const key in keyMap) {
             let keyType = undefined
             let targetKey = null
+
             let target = keyMap[key]
-            if (typeof target === "object") {
-                // eslint-disable-next-line
-                let { default: d, type } = target
-                targetKey = d
-                keyType = type
-            } else {
-                targetKey = target
-            }
-            this.dealNullValue(this.obj, key, keyType)
             // 只支持打单层
-            try {
-                if (targetKey.match(/^`.*`/)) {
-                    // eslint-disable-next-line
-                    if (/\{([^\}]+)\}/.test(targetKey)) {
-                        const v = this.obj[RegExp.$1]
-                        this.obj[key] = v ? targetKey.replace(/\$.*\}/, v) : ""
+            switch (typeof target) {
+                case "string":
+                    dealWithString(key, target, obj)
+                    break
+                case "function":
+                    obj[key] = target()
+                    break
+                case "object":
+                    if (typeof obj[key] === "object") {
+                        this.generate(keyMap[key], obj[key])
+                    } else {
+                        this.dealNullValue(obj, key, keyType)
+                        let { default: d, type } = target
+                        targetKey = d
+                        keyType = type
                     }
-                    this.obj[key] = removeSmall(this.obj[key])
-                } else {
-                    this.obj[targetKey] = this.obj[key]
-                    key !== targetKey && delete this.obj[key]
-                }
-            } catch (error) {
-                // eslint-disable-next-line
-                console.log(error)
+
+                    break
+                default:
+                    break
             }
         }
-        return this.obj
+        return obj
     }
 
     dealNullValue(obj, key, type = "String") {
@@ -60,18 +78,10 @@ class Modelbox {
             obj[key] = typeValueMap[t]
         } else {
             let v = obj[key]
-            if (this.isUndefined(v) || this.isNull(v)) {
+            if (!isDef(v)) {
                 obj[key] = typeValueMap[type]
             }
         }
-    }
-
-    isUndefined(v) {
-        return typeof v === "undefined" && v === undefined
-    }
-
-    isNull(v) {
-        return typeof v === "object" && v === null
     }
 }
 
