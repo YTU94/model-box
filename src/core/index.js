@@ -1,10 +1,10 @@
 import { isDef, removeSmall } from "../utils/index"
 
-function dealWithString(key, targetKey, obj = {}) {
+function dealWithString(key, targetKey, obj) {
     try {
         if (targetKey.match(/^`.*`/)) {
             if (/\{([^\}]+)\}/.test(targetKey)) {
-                const v = obj[RegExp.$1]
+                var v = obj[RegExp.$1]
                 obj[key] = v ? targetKey.replace(/\$.*\}/, v) : ""
             }
             obj[key] = removeSmall(obj[key])
@@ -18,6 +18,30 @@ function dealWithString(key, targetKey, obj = {}) {
     }
 }
 
+function dealWithFunc(key, target, obj) {
+    const res = typeof target === "function" && target()
+    if (isDef(res)) {
+        obj[key] = res
+    } else {
+        throw new Error("function must have return value")
+    }
+}
+
+function dealWithObj(key, target, obj) {
+    if (typeof obj[key] === "object") {
+        this.generate(target, obj[key])
+    } else {
+        let { default: defaultVal, type } = target
+        if (!isDef(defaultVal)) {
+            throw new Error("obj must has default value")
+        }
+        obj[key] = obj[key] || defaultVal
+        if (typeof type && !(obj[key] instanceof type)) {
+            // FIXME: 欠缺后续处理方式
+            throw new Error("obj type  not right")
+        }
+    }
+}
 class Modelbox {
     constructor(obj) {
         this.obj = { ...obj }
@@ -30,6 +54,9 @@ class Modelbox {
      */
     generate(keyMap, sourceObj) {
         let obj = { ...(sourceObj || this.obj) }
+        if (!Object.keys(keyMap) || !Object.keys(obj)) {
+            throw new Error("keyMap and obj must be a Object with value")
+        }
         // eslint-disable-next-line
         for (const key in keyMap) {
             let target = keyMap[key]
@@ -39,27 +66,10 @@ class Modelbox {
                     dealWithString(key, target, obj)
                     break
                 case "function":
-                    const res = target()
-                    if (isDef(res)) {
-                        obj[key] = res
-                    } else {
-                        throw new Error("function must have return value")
-                    }
+                    dealWithFunc(key, target, obj)
                     break
                 case "object":
-                    if (typeof obj[key] === "object") {
-                        this.generate(target, obj[key])
-                    } else {
-                        let { default: defaultVal, type } = target
-                        if (!isDef(defaultVal)) {
-                            throw new Error("obj must has default value")
-                        }
-                        obj[key] = obj[key] || defaultVal
-                        if (typeof type && !(obj[key] instanceof type)) {
-                            // FIXME: 欠缺后续处理方式
-                            throw new Error("obj type  not right")
-                        }
-                    }
+                    dealWithObj(key, target, obj)
                     break
                 default:
                     break
@@ -67,8 +77,6 @@ class Modelbox {
         }
         return obj
     }
-
-    
 }
 
 export default Modelbox

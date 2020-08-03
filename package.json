@@ -2,8 +2,11 @@
   "name": "@souche-f2e/model-box",
   "version": "1.0.0-beta.2",
   "description": "a middel model box",
-  "main": "./src/index.js",
+  "main": "./bin/bundle.js",
   "scripts": {
+    "serve": "rollup -w",
+    "excuse": "node ./src/template/index.js",
+    "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -17,7 +20,20 @@
   "author": "yuanjiankang <yuanjiankang@souche.com>",
   "license": "ISC",
   "dependencies": {
-    "babel-eslint": "^10.1.0",
-    "eslint": "^7.4.0"
+    "babel-eslint": "^7.1.0",
+    "eslint": "^7.4.0",
+    "global": "^4.4.0",
+    "rollup": "^2.23.0",
+    "the-answer": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-latest": "^6.24.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0"
   }
 }
